@@ -1,0 +1,15 @@
+server:
+  port: 18080
+
+spring:
+  datasource:
+    primary:
+      driver-class-name: oracle.jdbc.driver.OracleDriver
+      url: jdbc:oracle:thin:@135.36.246.36:1521:jzyx
+      username: touch
+      password: touch
+    secondary:
+      driver-class-name: oracle.jdbc.driver.OracleDriver
+      url: jdbc:oracle:thin:@135.36.246.42:1521:jzyxdb
+      username: REPORT
+      password: i3a7fgGd

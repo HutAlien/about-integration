@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bonc.activity.mapper.UserMapper">
+  <select id="getUserProvAndAreaIf" resultType="java.util.HashMap" parameterType="java.lang.String">
+		select 
+		t1.PROV_NO "provNo",
+		t1.PROV_NAME "provName",
+		t2.AREA_NAME "areaName",
+		t2.AREA_NO "areaNo"
+  		from  TRIBER.pure_user t ,TRIBER.PURE_ORG t1,TRIBER.PURE_ORG t2
+  		where 1=1
+  		AND 
+  		t.PROV_NO = T1.org_id
+  		AND
+  		t.area_no =T2.org_id
+  		AND
+  		LOGIN_ID=#{loginId}
+	</select>
+	
+	<select id="pageQueryRoot" resultType="java.util.HashMap" parameterType="java.util.HashMap">
+  	SELECT distinct
+	    triber.PURE_USER.USER_ID, triber.PURE_USER.LOGIN_ID, triber.PURE_USER.PASSWORD, triber.PURE_USER.USER_NAME,
+	    triber.PURE_USER.SEX, triber.PURE_USER.EMAIL, triber.PURE_USER.MOBILE, triber.PURE_USER.TELEPHONE, triber.PURE_USER.STATE, 
+    	triber.PURE_USER.PWD_STATE, triber.PURE_USER.MEMO,TO_CHAR(triber.PURE_USER.REG_DATE,'yyyy-MM-dd') REG_DATE,
+    	TO_CHAR(triber.PURE_USER.UPDATE_DATE,'yyyy-MM-dd') UPDATE_DATE, triber.PURE_USER.CREATER_ID, triber.PURE_USER.ORG_ID,triber.PURE_USER.ORGBUI_NAME,
+    	triber.PURE_USER.AREA_NO,triber.PURE_USER.PRESCRIPTION,triber.PURE_USER.POSITION,O1.ORG_NAME ORG_NAME,O1.PROV_NAME PROV_NAME,O1.AREA_NAME AREA_NAME
+	    FROM triber.PURE_USER 
+	    LEFT JOIN triber.PURE_USER_ROLE
+	    ON triber.PURE_USER_ROLE.USER_ID = triber.PURE_USER.USER_ID
+	    left join triber.PURE_ORG O1
+	    on  triber.PURE_USER.ORG_ID = O1.org_id 
+	    and triber.PURE_USER.PROV_NO = O1.PROV_NO
+	    and triber.PURE_USER.AREA_NO = O1.AREA_NO
+	    WHERE 1=1
+		<if test="userId != null">
+		AND	LOGIN_ID LIKE  '%' || #{userId,jdbcType=VARCHAR} || '%'
+		</if>
+		<if test="userName != null">
+		AND	USER_NAME LIKE  '%' || #{userName,jdbcType=VARCHAR} || '%'
+		</if>
+		ORDER BY UPDATE_DATE DESC
+  </select>
+  <select id="pageQuery" resultType="java.util.HashMap" parameterType="java.util.HashMap">
+  	SELECT distinct
+	    triber.PURE_USER.USER_ID, triber.PURE_USER.LOGIN_ID, triber.PURE_USER.PASSWORD, triber.PURE_USER.USER_NAME,
+	    triber.PURE_USER.SEX, triber.PURE_USER.EMAIL, triber.PURE_USER.MOBILE, triber.PURE_USER.TELEPHONE, triber.PURE_USER.STATE, 
+    	triber.PURE_USER.PWD_STATE, triber.PURE_USER.MEMO,TO_CHAR(triber.PURE_USER.REG_DATE,'yyyy-MM-dd') REG_DATE,
+    	TO_CHAR(triber.PURE_USER.UPDATE_DATE,'yyyy-MM-dd') UPDATE_DATE, triber.PURE_USER.CREATER_ID, triber.PURE_USER.ORG_ID,triber.PURE_USER.ORGBUI_NAME,
+    	triber.PURE_USER.AREA_NO,triber.PURE_USER.PRESCRIPTION,triber.PURE_USER.POSITION,O1.ORG_NAME ORG_NAME,O2.ORG_NAME PROV_NAME,O3.ORG_NAME AREA_NAME
+	    FROM triber.PURE_ORG r1,
+       (select t.*, r.path
+          from triber.PURE_USER t, triber.PURE_ORG r
+         where t.login_Id = #{loginId,jdbcType=VARCHAR}
+           and t.org_id = r.org_id) p,
+            triber.PURE_USER
+	    LEFT JOIN triber.PURE_USER_ROLE
+	    ON triber.PURE_USER_ROLE.USER_ID = triber.PURE_USER.USER_ID
+	    left join triber.PURE_ORG O1
+	    on  triber.PURE_USER.ORG_ID = O1.org_id 
+	    left join triber.PURE_ORG O2
+	    on triber.PURE_USER.PROV_NO = O2.ORG_ID
+	    left join triber.PURE_ORG O3
+	    on triber.PURE_USER.AREA_NO = O3.ORG_ID
+     	where triber.PURE_USER.org_id = r1.org_id
+   		and r1.path like '%' || p.org_id || '%'
+	    <if test="userId != null">
+	    AND	triber.PURE_USER.LOGIN_ID LIKE  '%' || #{userId,jdbcType=VARCHAR} || '%'
+		</if>
+		<if test="userName != null">
+		AND	triber.PURE_USER.USER_NAME LIKE  '%' || #{userName,jdbcType=VARCHAR} || '%'
+		</if>
+		ORDER BY UPDATE_DATE DESC
+  </select>
+	<select id="test">
+		insert into touch.SPRING_DATASOURCE_TEST values ('2','name_test_2','name_desc_2',sysdate)
+	</select>
+</mapper>

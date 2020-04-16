@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="report.popwin.opDetail">
+
+	<!-- 弹窗操作明细-->
+	<select id="opDetailData" resultType="java.util.HashMap" parameterType="java.util.HashMap">
+		select t.area_no "areaNo",
+		       a.area_name "areaName",
+		       t.opt_person_name "optPersonName",
+		       t.opt_person_id "optPersonId",
+		       decode(t.opt_channel,
+		              '01',
+		              '自有渠道',
+		              '02',
+		              '社会渠道',
+		              '03',
+		              '客服坐席',
+		              '04',
+		              '导航中心') "channelType",
+		       t.opt_phone_num "phone",
+		       t.business_name "buiName",
+		       to_char(t.last_pop_time,'yyyy-mm-dd hh24:mm:ss') "popTime",
+		       t.opt_activity_name "activityName",
+		       decode(t.is_opt, 1, '是', 0, '否') "isOpt",
+		        to_char(t.opt_date,'yyyy-mm-dd hh24:mm:ss') "optDate",
+		       decode(t.opt_status, 1, '接受', 2, '拒绝', 3, '考虑一下') "result",
+		       t.opt_product_name "productName",
+		       decode(t.is_trade,'1','是','0','否','未知') "isTrade",
+		       t.trade_rpoduct_name "tradeProductName",
+		       t.trade_channel_name "tradeChannelName"
+		  from REPORT.ZBCL_ACTIVITY_OPT_LOG_DETAIL t,
+		       report_code_area a
+		       where t.area_no=a.area_no(+)
+		<if test="logoffNum!=null">
+			<foreach collection="logoffNum" item="jobNumber" open="and t.opt_person_id not in(" separator="," close=")">
+				#{jobNumber}
+			</foreach>
+		</if>
+		 <choose>
+		      <when test="startDate == null and endDate ==null">
+		               and t.acct_day=replace('${initDate}', '-','')
+		      </when>
+		      <when test="startDate != null and endDate == null">
+		                and t.acct_day=replace('${startDate}', '-','')
+		      </when>
+		      <when test="startDate == null and endDate !=null">
+		                and t.acct_day=replace('${endDate}', '-','')
+		      </when>
+		      <when test="startDate != null and endDate !=null">
+		              and t.acct_day between
+		                  replace('${startDate}', '-','') and
+		                  replace('${endDate}', '-','')
+		      </when>
+		      <otherwise>
+		                and t.acct_day=replace('${initDate}', '-','')
+		      </otherwise>
+		</choose>	
+		<if test="activityName !=null">
+		and t.opt_activity_name like '%${activityName}%'
+		</if>	
+		<if test="isOpt !=null and isOpt !='-1'.toString()">
+		and t.is_opt ='${isOpt}'
+		</if>    
+		<if test="channelTypeSelected !=null and channelTypeSelected !='-1'.toString()">
+		  and t.opt_channel='${channelTypeSelected}'
+		</if>
+		<if test="buiOrgId !=null and buiOrgId !='085'.toString()">
+			and t.area_no='${buiOrgId}'
+		</if>
+		<choose>
+		      <when test="popStartDate == null and popEndDate ==null">
+		               and 1=1
+		      </when>
+		      <when test="popStartDate != null and popEndDate == null">
+		               and to_date(t.last_pop_time) = to_date('${popStartDate}','yyyy-mm-dd')
+		      </when>
+		      <when test="popStartDate == null and popEndDate !=null">
+		               and   to_date(t.last_pop_time) = to_date('${popEndDate}','yyyy-mm-dd')
+		      </when>
+		      <when test="popStartDate != null and popEndDate !=null">
+		            and  to_date(t.last_pop_time) between to_date('${popStartDate}','yyyy-mm-dd') and
+                        to_date('${popEndDate}','yyyy-mm-dd')
+		      </when>
+		      <otherwise>
+		                and 1=1
+		      </otherwise>
+		</choose>	
+		  order by t.opt_date desc
+	</select>
+
+	<select id="logoffJobNumber" resultType="java.util.HashMap" >
+		select sum(ACTIVITY_ID) total_activity,
+       touch_type,
+       sum(TOT_TASK_NUMS) total_task,
+       sum(CONTACT_TASK_NUMS) total_touch,
+       sum(ACCEPT_TASK_NUMS) total_accept,
+       SKILL_NAME,
+       sum(TOT_TASK_NUMS) - sum(CONTACT_TASK_NUMS) total_touch_f,
+       sum(TOT_TASK_NUMS) - sum(ACCEPT_TASK_NUMS) total_accept_f
+  from REPORT.REPORT_D_TRACK_VIEW
+ where 1 = 1
+   and ACTIVITY_NAME like '%' || '5G' || '%'
+ group by TOUCH_TYPE, SKILL_NAME
+ order by SKILL_NAME
+	</select>
+
+	<insert id="reportInsert">
+		insert into SPRING_DATASOURCE_TEST values ('2','test_2','desc_2')
+	</insert>
+</mapper>
